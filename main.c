@@ -1,5 +1,5 @@
 #include <stdio.h>
 
 int main(){
-    printf("gygb");
+    printf("tes");
 }
