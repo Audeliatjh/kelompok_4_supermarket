@@ -4,7 +4,7 @@
 
 #define MAX_BARANG 100
 
-// Struktur data barang ajkdjoqadoqhqq00q0dq0qdh0
+// Struktur data barang
 typedef struct {
     char nama[50];
     int jumlah;
