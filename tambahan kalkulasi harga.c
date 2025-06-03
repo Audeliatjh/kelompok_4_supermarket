@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #define MAX_BARANG 100
-//blabkabassggubzxvvbzbkjzxvb
+
 typedef struct {
     char nama[50];
     int jumlah;
