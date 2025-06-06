@@ -30,7 +30,6 @@ void loading(){
 
     gotoxy(x, y);
     printf("%s", text);
-    //fflush(stdout);
 
     for (int i = 0; i < 3; i++) {
         printf("%c%c", 219, 219); // efek kotak
@@ -41,16 +40,6 @@ void loading(){
     Beep(670, 200);
     system("cls");
 }
-
-/*void loading(){
-    printf("Loading");
-    for (int i = 0; i < 3; i++) {
-        printf("%c%c", 219, 219);
-        Sleep(900);
-    }
-    Beep(670, 200);
-    system("cls");
-}*/
 
 void gotoxy(int x, int y) {
     COORD coord = { (SHORT)x, (SHORT)y };
@@ -186,57 +175,6 @@ int loginakun() {
     system("cls");
     return 0;
 }
-
-
-/*void registerakun(){
-    printf("=======================");
-    printf("\n|  REGISTER AKUN BARU |\n");
-    printf("=======================\n");
-    printf("Username : ");
-    fgets(daftarakun[jumlahakun].username, sizeof(daftarakun[jumlahakun].username), stdin);
-    hapusenter(daftarakun[jumlahakun].username);
-    printf("Password : ");
-    fgets(daftarakun[jumlahakun].password, sizeof(daftarakun[jumlahakun].password), stdin);
-    hapusenter(daftarakun[jumlahakun].password);
-    jumlahakun++;
-    system("color a0");
-    printf("\n=======================\n");
-    printf("Akun berhasil dibuat!\n");
-    system("pause");
-    system("cls");
-}*/
-
-/*int loginakun() {
-    char inputuser[100], inputpassword[100];
-    system("color 0f");
-    printf("=======================");
-    printf("\n|       LOGIN         |\n");
-    printf("=======================\n");
-    printf("Username : ");
-    fgets(inputuser, sizeof(inputuser), stdin);
-    hapusenter(inputuser);
-    printf("Password : ");
-    fgets(inputpassword, sizeof(inputpassword), stdin);
-    hapusenter(inputpassword);
-
-    for(int i=0;i<jumlahakun;i++) {
-        if(strcmp(inputuser, daftarakun[i].username) == 0 && strcmp(inputpassword, daftarakun[i].password) == 0) {
-            system("color a0");
-            printf("==================\n");
-            printf("Login Berhasil!\n");
-            getchar();
-            system("cls");
-            return 1;
-        }
-    }
-    system("color cf");
-    printf("Login Gagal, Username atau Password salah!\n");
-    printf("Masukan Username atau Password yang benar!\n");
-
-    getchar();
-    system("cls");
-    return 0;
-}*/
 
 struct Barang {
     char nama[50];
