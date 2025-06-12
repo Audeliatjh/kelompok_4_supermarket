@@ -170,8 +170,7 @@ void kalkulasiHarga() {
         return;
     }
     int nomorBarang, jumlahBeli;
-    float diskon, pajak;
-    float subtotal, totalDiskon, totalPajak, totalAkhir;
+    float totalHarga;
 
     printf("\n============ KALKULASI HARGA PEMBELIAN ============\n");
     printf("\nDaftar Barang:\n");
@@ -196,37 +195,19 @@ void kalkulasiHarga() {
         return;
     }
 
-    printf("Masukkan diskon (%%): ");
-    scanf("%f", &diskon);
-    printf("Masukkan pajak (%%): ");
-    scanf("%f", &pajak);
-
-    subtotal = keranjangBarang[nomorBarang].hargaVal * jumlahBeli;
-    totalDiskon = subtotal * (diskon / 100);
-    totalPajak = (subtotal - totalDiskon) * (pajak / 100);
-    totalAkhir = subtotal - totalDiskon + totalPajak;
+    totalHarga = keranjangBarang[nomorBarang].hargaVal * jumlahBeli;
 
     printf("\n=============== HASIL KALKULASI ===============\n");
     printf("Barang dipilih    : %s\n", keranjangBarang[nomorBarang].nama);
     printf("Harga per unit    : Rp%.2f\n", keranjangBarang[nomorBarang].hargaVal);
     printf("Jumlah pembelian  : %d\n", jumlahBeli);
-    printf("------------------------------------------------\n");
-    printf("Subtotal          : Rp%.2f\n", subtotal);
-    printf("Diskon (%.1f%%)     : Rp%.2f\n", diskon, totalDiskon);
-    printf("Setelah diskon    : Rp%.2f\n", subtotal - totalDiskon);
-    printf("Pajak (%.1f%%)      : Rp%.2f\n", pajak, totalPajak);
     printf("================================================\n");
-    printf("TOTAL AKHIR       : Rp%.2f\n", totalAkhir);
+    printf("TOTAL HARGA       : Rp%.2f\n", totalHarga);
     printf("================================================\n");
 
     keranjangBarang[nomorBarang].jumlah -= jumlahBeli;
 
-    strcpy(keranjang[jumlahKeranjang].nama, keranjangBarang[nomorBarang].nama);
-    keranjang[jumlahKeranjang].jumlah = jumlahBeli;
-    keranjang[jumlahKeranjang].hargaVal = keranjangBarang[nomorBarang].hargaVal;
-    jumlahKeranjang++;
-
-    printf("Barang berhasil ditambahkan ke keranjang belanja.\n");
+    printf("Stok barang berhasil dikurangi.\n");
 
     getchar();
     getchar();
