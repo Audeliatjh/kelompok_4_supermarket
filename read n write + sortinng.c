@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <windows.h>
 #include <conio.h>
+#include <ctype.h>
 
 #define MAX_BARANG 100
 #define ENTER 13
@@ -46,10 +47,8 @@ void loading(){
 
     for (int i = 0; i < 3; i++) {
         printf("%c%c", 219, 219); // efek kotak
-        //fflush(stdout);
         Sleep(900);
     }
-
     Beep(670, 200);
     system("cls");
 }
@@ -101,7 +100,6 @@ void registerakun(){
     fgets(daftarakun[jumlahakun].username, sizeof(daftarakun[jumlahakun].username), stdin);
     hapusenter(daftarakun[jumlahakun].username);
 
-    // Input password (sejajar juga)
     gotoxy(kotakX, startY + 4);
     printf("Password : ");
     inputPassword(daftarakun[jumlahakun].password);
@@ -198,9 +196,8 @@ int loginakun() {
 struct Barang {
     char nama[50];
     int jumlah;
-    float hargaVal; // hanya satu field harga
+    float hargaVal;
 };
-
 
 struct ItemStruk {
     char nama[50];
@@ -223,19 +220,28 @@ void printCenter(const char *text, int width) {
     for (int i = 0; i < width - spasi - len; i++) putchar(' ');
 }
 
-// --- FUNGSI SORTING BARU ---
-void sortBarangByName() {
-    // Fungsi ini mengurutkan array 'keranjangBarang' berdasarkan nama barang secara alfabetis (ascending).
-    // Ini menggunakan algoritma Bubble Sort.
+// Fungsi untuk mengecek apakah string hanya berisi spasi atau kosong
+int is_string_empty_or_whitespace(const char *str) {
+    if (str == NULL || *str == '\0') {
+        return 1; // String kosong
+    }
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (!isspace((unsigned char)str[i])) {
+            return 0; // Menemukan karakter selain spasi
+        }
+    }
+    return 1; // Hanya berisi spasi
+}
+
+void sortBarangAbjad() {
+    struct Barang temp;
     for (int i = 0; i < jumlahKeranjangBarang - 1; i++) {
-        for (int j = 0; j < jumlahKeranjangBarang - i - 1; j++) {
-            // Membandingkan nama dua barang yang berdekatan
-            if (strcmp(keranjangBarang[j].nama, keranjangBarang[j+1].nama) > 0) {
-                // Jika nama barang ke-j lebih besar (secara alfabetis) dari nama barang ke-j+1,
-                // maka tukar posisi kedua barang tersebut.
-                struct Barang temp = keranjangBarang[j];
-                keranjangBarang[j] = keranjangBarang[j+1];
-                keranjangBarang[j+1] = temp;
+        for (int j = i + 1; j < jumlahKeranjangBarang; j++) {
+            if (strcasecmp(keranjangBarang[i].nama, keranjangBarang[j].nama) > 0) {
+                // Tukar posisi
+                temp = keranjangBarang[i];
+                keranjangBarang[i] = keranjangBarang[j];
+                keranjangBarang[j] = temp;
             }
         }
     }
@@ -247,8 +253,7 @@ void tampilkanBarang(){
         return;
     }
 
-    // Panggil fungsi sorting agar daftar barang selalu terurut
-    sortBarangByName();
+    sortBarangAbjad();
 
     int lebarNo = 5, lebarNama = 22, lebarStok = 8, lebarHarga = 12;
 
@@ -274,13 +279,11 @@ void tampilkanBarang(){
     }
     printf("----------------------------------------------------\n");
     sudahLihatBarang = 1;
-
-    //getchar(); // Dikomentari karena sudah ada getch() di main
 }
 
 void tambahBarang() {
     if (!sudahLihatBarang) {
-        printf("\n⚠  Harus lihat daftar barang dulu sebelum tambah barang.\n");
+        printf("\n⚠ Harus lihat daftar barang dulu sebelum tambah barang.\n");
         system("pause");
         system("cls");
         return;
@@ -293,16 +296,49 @@ void tambahBarang() {
     }
     struct Barang *b = &keranjangBarang[jumlahKeranjangBarang];
 
-    printf("Masukkan nama barang: ");
-    getchar(); // Membersihkan buffer input
-    fgets(b->nama, sizeof(b->nama), stdin);
-    b->nama[strcspn(b->nama, "\n")] = '\0';
+    // Loop untuk memastikan input nama barang tidak kosong atau hanya spasi
+    while (1) {
+        printf("Masukkan nama barang: ");
+        fflush(stdin);
+        fgets(b->nama, sizeof(b->nama), stdin);
+        hapusenter(b->nama); // Hapus karakter newline
 
-    printf("Masukkan jumlah stok: ");
-    scanf("%d", &b->jumlah);
+        if (is_string_empty_or_whitespace(b->nama)) {
+            printf("Nama barang tidak boleh kosong atau hanya berisi spasi. Silakan masukkan lagi.\n");
+        } else {
+            break; // Input valid, keluar dari loop
+        }
+    }
 
-    printf("Masukkan harga barang: ");
-    scanf("%f", &b->hargaVal);
+    int validInput = 0;
+    while (!validInput) {
+        printf("Masukkan jumlah stok: ");
+        if (scanf("%d", &b->jumlah) == 1) {
+            if (b->jumlah < 0) {
+                printf("Jumlah stok tidak boleh negatif. Silakan masukkan lagi.\n");
+            } else {
+                validInput = 1;
+            }
+        } else {
+            printf("Input tidak valid! Harap masukkan angka untuk jumlah stok.\n");
+            while (getchar() != '\n'); // Bersihkan buffer
+        }
+    }
+
+    validInput = 0;
+    while (!validInput) {
+        printf("Masukkan harga barang: ");
+        if (scanf("%f", &b->hargaVal) == 1) {
+            if (b->hargaVal < 0) {
+                printf("Harga barang tidak boleh negatif. Silakan masukkan lagi.\n");
+            } else {
+                validInput = 1;
+            }
+        } else {
+            printf("Input tidak valid! Harap masukkan angka untuk harga barang.\n");
+            while (getchar() != '\n');
+        }
+    }
 
     jumlahKeranjangBarang++;
     printf("Barang berhasil ditambahkan.\n");
@@ -311,7 +347,7 @@ void tambahBarang() {
 }
 
 void kalkulasiHarga(){
-    // Panggil tampilkanBarang() yang kini sudah otomatis memanggil sorting
+
     tampilkanBarang();
 
     int nomorBarang, jumlahBeli,validInput;
@@ -367,10 +403,13 @@ void bayar() {
     float subtotal = 0, totalDiskon = 0, totalPajak = 0, totalAkhir = 0;
     int uangDibayar, kembalian;
 
-    // Hitung semua dulu, tapi JANGAN tulis ke file dulu
+    printf("======== Struk Belanja ========\n");
     for (int i = 0; i < jumlahKeranjang; i++) {
         float hargaTotal = keranjang[i].hargaVal * keranjang[i].jumlah;
-        float diskon = (keranjang[i].jumlah >= 5) ? 0.10 * hargaTotal : 0;
+        float diskon = 0;
+        if(keranjang[i].jumlah>=5){
+            diskon = 0.10*hargaTotal;
+        }
         float hargaSetelahDiskon = hargaTotal - diskon;
         float pajak = 0.02 * hargaSetelahDiskon;
         float total = hargaSetelahDiskon + pajak;
@@ -379,9 +418,13 @@ void bayar() {
         totalDiskon += diskon;
         totalPajak += pajak;
         totalAkhir += total;
-    }
 
-    printf("======= Struk Belanja =======\n");
+        printf("%s x%d @%.0f = %.0f\n", keranjang[i].nama, keranjang[i].jumlah, keranjang[i].hargaVal, hargaTotal);
+        printf("  Diskon: %.0f\n", diskon);
+        printf("  Pajak : %.0f\n", pajak);
+        printf("  Total : %.0f\n\n", total);
+    }
+    printf("==============================\n");
     printf("Subtotal      : %.0f\n", subtotal);
     printf("Total Diskon  : %.0f\n", totalDiskon);
     printf("Total Pajak   : %.0f\n", totalPajak);
@@ -398,17 +441,16 @@ void bayar() {
             printf("Input tidak valid! Harap masukkan angka.\n");
             getch();
             while (getchar() != '\n');
-            return; // Keluar, tidak menulis ke file
+            return;
         }
 
         if (uangDibayar < totalAkhir) {
             printf("Uang Anda kurang!\n");
         }
-    } while (uangDibayar < totalAkhir);
+    } while (uangDibayar < totalAkhir || validInput != 1);
 
     kembalian = uangDibayar - totalAkhir;
 
-    // Baru sekarang kita tulis ke file karena input valid
     FILE *fptr = fopen("struk.txt", "w");
     if (fptr == NULL) {
         printf("Gagal membuka file untuk menulis!\n");
@@ -418,7 +460,10 @@ void bayar() {
     fprintf(fptr, "======= Struk Belanja =======\n");
     for (int i = 0; i < jumlahKeranjang; i++) {
         float hargaTotal = keranjang[i].hargaVal * keranjang[i].jumlah;
-        float diskon = (keranjang[i].jumlah >= 5) ? 0.10 * hargaTotal : 0;
+        float diskon = 0;
+        if (keranjang[i].jumlah >= 5){
+            diskon = 0.10 * hargaTotal;
+        }
         float hargaSetelahDiskon = hargaTotal - diskon;
         float pajak = 0.02 * hargaSetelahDiskon;
         float total = hargaSetelahDiskon + pajak;
@@ -445,8 +490,6 @@ void bayar() {
     printf("\nLihat struk belanja di menu Tampilkan Struk\n");
     system("pause");
 }
-
-
 
 void tampilkanStruk(){
     FILE *fptr;
@@ -476,7 +519,6 @@ void inisialisasiBarangAwal() {
     keranjangBarang[1].jumlah = 15;
     keranjangBarang[1].hargaVal = 35000;
 
-    // Menambahkan beberapa barang lagi untuk demonstrasi sorting
     strcpy(keranjangBarang[2].nama, "Gula Pasir 1kg");
     keranjangBarang[2].jumlah = 25;
     keranjangBarang[2].hargaVal = 15000;
@@ -489,7 +531,7 @@ void inisialisasiBarangAwal() {
     keranjangBarang[4].jumlah = 30;
     keranjangBarang[4].hargaVal = 12000;
 
-    jumlahKeranjangBarang = 5; // Perbarui jumlah barang awal
+    jumlahKeranjangBarang = 5;
 }
 
 void selesai(){
@@ -523,15 +565,14 @@ void developerDelay(char text[][100], int baris, int judulDelay, int namaDelay) 
 }
 
 void developer(){
-    // Array 2 dimensi untuk menyimpan semua baris teks
     char lines[7][100] = {
         "\n\n\n\n\n\n\n\t\t\t\t\t====== Developer Simple Supermarket ======\n\n\n",
-        "\t\t\t\t\tSamuel Richad Christianto       - 672024156\n",
-        "\t\t\t\t\tSheila Agustina Wismarani       - 672024158\n",
-        "\t\t\t\t\tAudelia Tjhoernandes            - 672024162\n",
+        "\t\t\t\t\tSamuel Richad Christianto     - 672024156\n",
+        "\t\t\t\t\tSheila Agustina Wismarani     - 672024158\n",
+        "\t\t\t\t\tAudelia Tjhoernandes          - 672024162\n",
         "\t\t\t\t\tNadya Nur Aini Lailatun Nikmah - 672024172\n",
-        "\t\t\t\t\tBagus Kurniawan                 - 672024218\n",
-        "\t\t\t\t\tEdwin Kristianus Papa           - 672024238\n"
+        "\t\t\t\t\tBagus Kurniawan               - 672024218\n",
+        "\t\t\t\t\tEdwin Kristianus Papa         - 672024238\n"
     };
 
     system("color 8b");
@@ -571,7 +612,7 @@ int main() {
         "Tambah Barang",
         "Kalkulasi Harga",
         "Bayar",
-        "Struk Belanja",
+        "Tampilkan Struk",
         "Keluar"
     };
 
@@ -587,7 +628,7 @@ int main() {
             switch (pilihan) {
                 case 0:
                     tampilkanBarang();
-                    getch(); // Menunggu input setelah menampilkan barang
+                    getch();
                     break;
                 case 1:
                     tambahBarang();
@@ -601,7 +642,7 @@ int main() {
                 case 4:
                     tampilkanStruk();
                     break;
-                case 5: //keluar(); selesai = 1; break;
+                case 5:
                     selesai();
                     developer();
                     keluar=1;
