@@ -240,7 +240,6 @@ void sortBarangByName() {
         }
     }
 }
-// --- AKHIR FUNGSI SORTING BARU ---
 
 void tampilkanBarang(){
     if (jumlahKeranjangBarang == 0) {
@@ -363,63 +362,43 @@ void kalkulasiHarga(){
     system("cls");
 }
 
-void tampilkanStruk(){
+void bayar() {
     system("cls");
     float subtotal = 0, totalDiskon = 0, totalPajak = 0, totalAkhir = 0;
     int uangDibayar, kembalian;
 
-    printf("======= Struk Belanja =======\n");
-    if (jumlahKeranjang == 0) {
-        printf("Keranjang belanja kosong. Tidak ada struk untuk ditampilkan.\n");
-        system("pause");
-        return;
-    }
-
-    for(int i = 0; i < jumlahKeranjang; i++) {
+    // Hitung semua dulu, tapi JANGAN tulis ke file dulu
+    for (int i = 0; i < jumlahKeranjang; i++) {
         float hargaTotal = keranjang[i].hargaVal * keranjang[i].jumlah;
-        float diskon = 0;
-
-        // Diskon: 10% kalau beli >= 5
-        if(keranjang[i].jumlah >= 5) {
-            diskon = 0.10 * hargaTotal;
-        }
-
+        float diskon = (keranjang[i].jumlah >= 5) ? 0.10 * hargaTotal : 0;
         float hargaSetelahDiskon = hargaTotal - diskon;
         float pajak = 0.02 * hargaSetelahDiskon;
         float total = hargaSetelahDiskon + pajak;
 
-        // Cetak struk per barang
-        printf("%s x%d @%.0f = %.0f\n", keranjang[i].nama, keranjang[i].jumlah, keranjang[i].hargaVal, hargaTotal);
-        printf("  Diskon: %.0f\n", diskon);
-        printf("  Pajak : %.0f\n", pajak);
-        printf("  Total : %.0f\n\n", total);
-
-        // Akumulasi
         subtotal += hargaTotal;
         totalDiskon += diskon;
         totalPajak += pajak;
         totalAkhir += total;
     }
 
-    printf("==============================\n");
+    printf("======= Struk Belanja =======\n");
     printf("Subtotal      : %.0f\n", subtotal);
     printf("Total Diskon  : %.0f\n", totalDiskon);
     printf("Total Pajak   : %.0f\n", totalPajak);
     printf("Total Akhir   : %.0f\n", totalAkhir);
     printf("==============================\n\n");
 
+    // Validasi input uang
     int validInput;
-    do
-    {
+    do {
         printf("Uang Anda: Rp.");
         validInput = scanf("%d", &uangDibayar);
 
-        if(validInput != 1) {
+        if (validInput != 1) {
             printf("Input tidak valid! Harap masukkan angka.\n");
             getch();
-            while(getchar() != '\n'); // Bersihkan buffer
-            // Tidak return di sini agar loop bisa meminta input ulang
-            continue; // Lanjutkan ke iterasi do-while berikutnya
+            while (getchar() != '\n');
+            return; // Keluar, tidak menulis ke file
         }
 
         if (uangDibayar < totalAkhir) {
@@ -428,9 +407,63 @@ void tampilkanStruk(){
     } while (uangDibayar < totalAkhir);
 
     kembalian = uangDibayar - totalAkhir;
+
+    // Baru sekarang kita tulis ke file karena input valid
+    FILE *fptr = fopen("struk.txt", "w");
+    if (fptr == NULL) {
+        printf("Gagal membuka file untuk menulis!\n");
+        return;
+    }
+
+    fprintf(fptr, "======= Struk Belanja =======\n");
+    for (int i = 0; i < jumlahKeranjang; i++) {
+        float hargaTotal = keranjang[i].hargaVal * keranjang[i].jumlah;
+        float diskon = (keranjang[i].jumlah >= 5) ? 0.10 * hargaTotal : 0;
+        float hargaSetelahDiskon = hargaTotal - diskon;
+        float pajak = 0.02 * hargaSetelahDiskon;
+        float total = hargaSetelahDiskon + pajak;
+
+        fprintf(fptr, "%s x%d @%.0f = %.0f\n", keranjang[i].nama, keranjang[i].jumlah, keranjang[i].hargaVal, hargaTotal);
+        fprintf(fptr, "  Diskon: %.0f\n", diskon);
+        fprintf(fptr, "  Pajak : %.0f\n", pajak);
+        fprintf(fptr, "  Total : %.0f\n\n", total);
+    }
+
+    fprintf(fptr, "==============================\n");
+    fprintf(fptr, "Subtotal      : %.0f\n", subtotal);
+    fprintf(fptr, "Total Diskon  : %.0f\n", totalDiskon);
+    fprintf(fptr, "Total Pajak   : %.0f\n", totalPajak);
+    fprintf(fptr, "Total Akhir   : %.0f\n", totalAkhir);
+    fprintf(fptr, "Uang Dibayar  : Rp. %d\n", uangDibayar);
+    fprintf(fptr, "Kembalian     : Rp. %d\n", kembalian);
+    fprintf(fptr, "==============================\n");
+
+    fclose(fptr);
+
     printf("Kembalian : Rp. %d\n", kembalian);
     printf("==============================\n");
+    printf("\nLihat struk belanja di menu Tampilkan Struk\n");
+    system("pause");
+}
 
+
+
+void tampilkanStruk(){
+    FILE *fptr;
+    char ch;
+    system("cls");
+
+    fptr = fopen("struk.txt", "r");
+    if(fptr == NULL){
+        printf("Gagal menampilkan struk! Mungkin belum ada pembayaran yang dilakukan.\n");
+        system("pause");
+        return;
+    }
+
+    while((ch = fgetc(fptr)) !=EOF){
+        printf("%c", ch);
+    }
+    fclose(fptr);
     system("pause");
 }
 
@@ -533,21 +566,22 @@ int main() {
     loading();
     inisialisasiBarangAwal();
 
-      char menu[5][30] = {
+      char menu[6][30] = {
         "Lihat Barang",
         "Tambah Barang",
         "Kalkulasi Harga",
+        "Bayar",
         "Struk Belanja",
         "Keluar"
     };
 
     do {
         system("color 0f");
-        tampilkanMenu(pilihan, menu, 5);
+        tampilkanMenu(pilihan, menu, 6);
         key = _getch();
 
         if (key == 72 && pilihan > 0) pilihan--;        // panah atas
-        else if (key == 80 && pilihan < 4) pilihan++;  // panah bawah
+        else if (key == 80 && pilihan < 5) pilihan++;  // panah bawah
         else if (key == 13) {                          // Enter
             system("cls");
             switch (pilihan) {
@@ -562,9 +596,12 @@ int main() {
                     kalkulasiHarga();
                     break;
                 case 3:
+                    bayar();
+                    break;
+                case 4:
                     tampilkanStruk();
                     break;
-                case 4: //keluar(); selesai = 1; break;
+                case 5: //keluar(); selesai = 1; break;
                     selesai();
                     developer();
                     keluar=1;
